@@ -19,15 +19,15 @@
   --color-no-text: #7A1F1F;
   --color-warn: #C84B2F;
 
-  --font-display: var(--font-fraunces);
-  --font-body: var(--font-dm-sans);
-  --font-number: var(--font-inter);
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-number: 'Inter', system-ui, sans-serif;
 }
 
 body {
   background: var(--color-sage-whisper);
   color: var(--color-forest);
-  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  font-family: 'DM Sans', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 

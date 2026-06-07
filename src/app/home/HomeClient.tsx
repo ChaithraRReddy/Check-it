@@ -35,11 +35,11 @@ export default function HomeClient({ profile, totalCommitments, checks, email }:
         <div className="grid grid-cols-2 gap-2">
           <div className="rounded-xl bg-forest p-3.5">
             <p className="text-[10px] text-mint">Free cash / month</p>
-            <p className="font-display text-[20px] font-semibold" style={{ color: freeCash < 0 ? '#FFB3A6' : '#E8F5EE' }}>₹{mask(inr(freeCash))}</p>
+            <p className="font-sans text-[20px] font-semibold" style={{ color: freeCash < 0 ? '#FFB3A6' : '#E8F5EE' }}>₹{mask(inr(freeCash))}</p>
           </div>
           <div className="rounded-xl bg-sage-whisper p-3.5">
             <p className="text-[10px] text-sage">Emergency buffer</p>
-            <p className="font-display text-[20px] font-semibold text-forest">₹{mask(inr(profile.liquid_buffer))}</p>
+            <p className="font-sans text-[20px] font-semibold text-forest">₹{mask(inr(profile.liquid_buffer))}</p>
           </div>
         </div>
         <div className="my-3 h-px bg-divider" />

@@ -5,7 +5,7 @@ export function LogoMark({ size = 40 }: { size?: number }) {
       <circle cx="65" cy="12" r="7" fill="#3EC98A" stroke="#0F3F27" strokeWidth="2" />
       <circle cx="18" cy="78" r="7" fill="#3EC98A" stroke="#0F3F27" strokeWidth="2" />
       <line x1="18" y1="78" x2="32" y2="64" stroke="#3EC98A" strokeWidth="3" strokeLinecap="round" />
-      <text x="66" y="78" textAnchor="middle" fontSize={42} fill="#0F3F27" style={{ fontFamily: 'var(--font-inter)', fontWeight: 300 }}>₹</text>
+      <text x="66" y="78" textAnchor="middle" fontSize={42} fill="#0F3F27" style={{ fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 300 }}>₹</text>
     </svg>
   )
 }
