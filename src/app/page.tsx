@@ -1,39 +1,48 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { LogoMark, Wordmark } from '@/components/Logo'
 
 export default function LoginPage() {
+  const router = useRouter()
+  const [showSplash, setShowSplash] = useState(true)
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowSplash(false), 1800)
+    return () => clearTimeout(t)
+  }, [])
+
   const handleGoogle = async () => {
     const supabase = createClient()
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${location.origin}/auth/callback` },
-    })
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${location.origin}/auth/callback` } })
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-6">
-      <div className="flex w-full max-w-[340px] flex-col items-center text-center">
-        <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full border-2 border-forest">
-          <span className="font-number text-xl font-light text-forest">₹</span>
+    <main className="relative flex min-h-screen flex-col items-center justify-center px-6">
+      <div className={`absolute inset-0 z-20 flex flex-col items-center justify-center bg-sage-whisper transition-opacity duration-700 ${showSplash ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
+        <div className={`flex flex-col items-center transition-transform duration-700 ${showSplash ? 'scale-100' : 'scale-90'}`}>
+          <LogoMark size={76} />
+          <p className="mt-5 text-[12px] tracking-wide text-sage">Know before you buy.</p>
         </div>
+      </div>
 
-        <h1 className="font-display text-[20px] font-semibold tracking-tight text-forest">
-          Check<span className="text-mint">.</span>it
-        </h1>
+      <div className={`flex w-full max-w-[340px] flex-col items-center text-center transition-opacity duration-700 ${showSplash ? 'opacity-0' : 'opacity-100'}`}>
+        <LogoMark size={48} />
+        <div className="mt-4"><Wordmark className="text-[20px]" /></div>
         <p className="mb-8 mt-1 text-[10px] tracking-wide text-sage">Know before you buy.</p>
 
-        <h2 className="font-display text-[18px] font-semibold leading-tight text-forest">
-          An honest gut-check<br />before you spend.
-        </h2>
-        <p className="mb-8 mt-3 text-[10px] font-light leading-relaxed text-sage">
-          Enter your real numbers and get a straight verdict — not a guess.
-        </p>
+        <h2 className="font-display text-[18px] font-semibold leading-tight text-forest">An honest gut-check<br />before you spend.</h2>
+        <p className="mb-7 mt-3 text-[10px] font-light leading-relaxed text-sage">Enter your real numbers and get a straight verdict — not a guess.</p>
 
-        <button
-          onClick={handleGoogle}
-          className="flex w-full items-center justify-center gap-3 rounded-full border-[0.5px] border-border bg-white px-6 py-3 text-[13px] font-medium text-forest transition hover:bg-mist"
-        >
+        <button onClick={() => router.push('/onboarding?guest=1')}
+          className="mb-2.5 w-full rounded-full bg-mint py-3 text-[13px] font-semibold text-forest transition hover:opacity-90">
+          Try it first →
+        </button>
+
+        <button onClick={handleGoogle}
+          className="flex w-full items-center justify-center gap-3 rounded-full border-[0.5px] border-border bg-white px-6 py-3 text-[13px] font-medium text-forest transition hover:bg-mist">
           <svg width="16" height="16" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1Z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z"/>
@@ -43,9 +52,7 @@ export default function LoginPage() {
           Continue with Google
         </button>
 
-        <p className="mt-3.5 text-[8px] text-placeholder">
-          By continuing you agree to our Terms & Privacy Policy.
-        </p>
+        <p className="mt-3.5 text-[8px] text-placeholder">By continuing you agree to our Terms & Privacy Policy.</p>
       </div>
     </main>
   )
