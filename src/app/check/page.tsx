@@ -9,9 +9,9 @@ import { LogoMark } from '@/components/Logo'
 
 const inr = (n: number) => Math.round(n).toLocaleString('en-IN')
 const PILL = {
-  yes: { bg: 'bg-yes-fill', text: 'text-yes-text', dot: '#3EC98A', label: 'Yes, go for it' },
-  careful: { bg: 'bg-careful-fill', text: 'text-careful-text', dot: '#F5A623', label: 'Careful' },
-  no: { bg: 'bg-no-fill', text: 'text-no-text', dot: '#E24B4A', label: 'Not yet' },
+  yes:     { bg: 'bg-yes-fill',     text: 'text-yes-text',     icon: 'ti-check',         iconColor: '#1A6640', label: 'Yes, go for it' },
+  careful: { bg: 'bg-careful-fill', text: 'text-careful-text', icon: 'ti-alert-triangle',  iconColor: '#7A4500', label: 'Careful' },
+  no:      { bg: 'bg-no-fill',      text: 'text-no-text',      icon: 'ti-x',             iconColor: '#7A1F1F', label: 'Not yet' },
 } as const
 const fieldCls = 'w-full rounded-xl border-[1.5px] border-border bg-white py-3 pl-8 pr-4 text-[15px] text-forest outline-none transition focus:border-forest placeholder:text-placeholder'
 const fieldPlain = 'w-full rounded-xl border-[1.5px] border-border bg-white px-4 py-3 text-[15px] text-forest outline-none transition focus:border-forest placeholder:text-placeholder'
@@ -133,7 +133,8 @@ export default function CheckPage() {
       {view === 'verdict' && result && (
         <section className="mt-2">
           <span className={`mb-4 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[11px] font-medium ${PILL[result.verdict].bg} ${PILL[result.verdict].text}`}>
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: PILL[result.verdict].dot }} />{PILL[result.verdict].label}
+          <i className={`ti ${PILL[result.verdict].icon}`} aria-hidden="true" style={{ fontSize: 13, color: PILL[result.verdict].iconColor }} />
+          {PILL[result.verdict].label}
           </span>
           <h1 className="font-display text-[20px] font-semibold leading-tight text-forest">{result.headline}</h1>
           <p className="mb-6 mt-3 text-[12px] font-light leading-relaxed text-sage">{result.reason}</p>

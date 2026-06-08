@@ -10,9 +10,9 @@ type Profile = { monthly_income: number; monthly_savings: number; liquid_buffer:
 
 const inr = (n: number) => Math.round(n).toLocaleString('en-IN')
 const PILL = {
-  yes: { bg: 'bg-yes-fill', text: 'text-yes-text', dot: '#3EC98A', label: 'Yes' },
-  careful: { bg: 'bg-careful-fill', text: 'text-careful-text', dot: '#F5A623', label: 'Careful' },
-  no: { bg: 'bg-no-fill', text: 'text-no-text', dot: '#E24B4A', label: 'Not yet' },
+  yes:     { bg: 'bg-yes-fill',     text: 'text-yes-text',     icon: 'ti-check',        iconColor: '#1A6640', label: 'Yes' },
+  careful: { bg: 'bg-careful-fill', text: 'text-careful-text', icon: 'ti-alert-triangle', iconColor: '#7A4500', label: 'Careful' },
+  no:      { bg: 'bg-no-fill',      text: 'text-no-text',      icon: 'ti-x',            iconColor: '#7A1F1F', label: 'Not yet' },
 } as const
 
 export default function HomeClient({ profile, totalCommitments, checks, email }: { profile: Profile; totalCommitments: number; checks: Check[]; email: string }) {
@@ -75,7 +75,10 @@ export default function HomeClient({ profile, totalCommitments, checks, email }:
                 </div>
                 <div className="ml-auto flex items-center gap-2.5">
                   <span className="font-number text-[13px] font-medium text-forest">₹{inr(c.total_cost)}</span>
-                  <span className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-medium ${p.bg} ${p.text}`}><span className="h-1.5 w-1.5 rounded-full" style={{ background: p.dot }} />{p.label}</span>
+                  <span className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-medium ${p.bg} ${p.text}`}>
+                    <i className={`ti ${p.icon}`} aria-hidden="true" style={{ fontSize: 12, color: p.iconColor }} />
+                    {p.label}
+                  </span>
                 </div>
               </div>
             )
