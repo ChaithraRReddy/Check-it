@@ -50,7 +50,9 @@ export default function HomeClient({ profile, totalCommitments, checks, email }:
           <Row label="Liquid buffer" value={`₹${mask(inr(profile.liquid_buffer))}`} sub={`need ₹${inr(requiredBuffer)}`} />
         </div>
         <div className="mt-3.5 flex items-center justify-between border-t border-divider pt-3">
-          <button onClick={() => setHidden(h => !h)} className="text-[12px] text-sage">{hidden ? 'Show' : 'Hide'} numbers</button>
+          <button onClick={() => setHidden(h => !h)} className="inline-flex items-center gap-1.5 rounded-full border-[0.5px] border-border px-3 py-1.5 text-[12px] text-sage transition hover:bg-mist">
+            <i className={`ti ${hidden ? 'ti-eye-off' : 'ti-eye'}`} aria-hidden="true" style={{ fontSize: 14 }} />
+            {hidden ? 'Show numbers' : 'Hide numbers'}</button>
           <button onClick={() => router.push('/onboarding?edit=1')} className="text-[12px] font-medium text-mint">Modify financials →</button>
         </div>
       </div>
