@@ -52,7 +52,7 @@ export default function LoginPage() {
           Continue with Google
         </button>
 
-        <p className="mt-3.5 text-[8px] text-placeholder">By continuing you agree to our Terms & Privacy Policy.</p>
+        <p className="mt-3.5 text-[10px] text-placeholder">By continuing you agree to our Terms & Privacy Policy.</p>
       </div>
     </main>
   )
