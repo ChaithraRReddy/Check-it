@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { saveGuestProfile, getGuestProfile } from '@/lib/guest'
-import { LogoMark } from '@/components/Logo'
+import { Logo } from '@/components/Logo'
 
-const CATEGORIES = ['Rent/PG', 'EMI', 'SIP/MF', 'Insurance', 'Subscriptions', 'Utilities', 'Other']
+const CATEGORIES = ['Rent/PG', 'Loan EMI', 'Insurance', 'Subscriptions', 'Bills & utilities', 'Other']
 type Expense = { label: string; amount: string }
 type Mode = 'new' | 'edit' | 'guest'
 
@@ -36,13 +36,13 @@ export default function OnboardingPage() {
         if (!user) { router.push('/'); return }
         const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
         const { data: comms } = await supabase.from('commitments').select('label, amount').eq('user_id', user.id)
-        if (prof) { setIncome(String(prof.monthly_income)); setSavings(String(prof.monthly_savings)); setBuffer(String(prof.liquid_buffer)) }
+        if (prof) { setIncome(String(prof.monthly_income)); setSavings(String(prof.monthly_savings)); setBuffer(prof.liquid_buffer ? String(prof.liquid_buffer) : '') }
         if (comms && comms.length) setExpenses(comms.map(c => ({ label: c.label, amount: String(c.amount) })))
       })()
     } else if (m === 'guest') {
       const gp = getGuestProfile()
       if (gp) {
-        setIncome(String(gp.income)); setSavings(String(gp.savings)); setBuffer(String(gp.buffer))
+        setIncome(String(gp.income)); setSavings(String(gp.savings)); setBuffer(gp.buffer ? String(gp.buffer) : '')
         if (gp.commitments.length) setExpenses(gp.commitments.map(c => ({ label: c.label, amount: String(c.amount) })))
       }
     }
@@ -55,21 +55,20 @@ export default function OnboardingPage() {
   const next = () => {
     setError('')
     if (step === 0 && (!income || Number(income) <= 0)) return setError('Please enter your monthly income.')
-    if (step === 1) {
-      if (expenses.filter(e => Number(e.amount) > 0).length === 0) return setError('Add at least one commitment.')
-      if (savings === '' || Number(savings) < 0) return setError('Enter your monthly savings (0 is fine).')
-    }
+    if (step === 1 && expenses.filter(e => Number(e.amount) > 0).length === 0) return setError('Add at least one commitment.')
     setStep(s => s + 1)
   }
   const back = () => { setError(''); setStep(s => s - 1) }
 
   const finish = async () => {
     setError('')
-    if (buffer === '' || Number(buffer) < 0) return setError('Enter your liquid savings (0 is fine).')
+    if (savings === '' || Number(savings) < 0) return setError("Enter how much you save each month — type 0 if you don't.")
+    if (buffer !== '' && (isNaN(Number(buffer)) || Number(buffer) < 0)) return setError('Enter a valid emergency amount, or leave it blank.')
+    const bufferVal = buffer === '' ? 0 : Number(buffer)
     const cleaned = expenses.filter(e => Number(e.amount) > 0)
 
     if (mode === 'guest') {
-      saveGuestProfile({ income: Number(income), savings: Number(savings), buffer: Number(buffer), commitments: cleaned.map(e => ({ label: e.label, amount: Number(e.amount) })) })
+      saveGuestProfile({ income: Number(income), savings: Number(savings), buffer: bufferVal, commitments: cleaned.map(e => ({ label: e.label, amount: Number(e.amount) })) })
       router.push('/check?guest=1')
       return
     }
@@ -79,7 +78,7 @@ export default function OnboardingPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/'); return }
     const rows = cleaned.map(e => ({ user_id: user.id, label: e.label, amount: Number(e.amount) }))
-    const { error: pErr } = await supabase.from('profiles').upsert({ id: user.id, monthly_income: Number(income), monthly_savings: Number(savings), liquid_buffer: Number(buffer) })
+    const { error: pErr } = await supabase.from('profiles').upsert({ id: user.id, monthly_income: Number(income), monthly_savings: Number(savings), liquid_buffer: bufferVal })
     await supabase.from('commitments').delete().eq('user_id', user.id)
     const { error: cErr } = await supabase.from('commitments').insert(rows)
     if (pErr || cErr) { setSaving(false); setError('Something went wrong saving your profile. Please try again.'); return }
@@ -93,7 +92,7 @@ export default function OnboardingPage() {
     <main className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="w-full max-w-[420px]">
         <div className="mb-6 flex items-center justify-between px-1">
-          <LogoMark size={30} />
+          <Logo markSize={28} wordClass="text-[18px]" />
           {mode !== 'new' && (
             <button onClick={() => router.push(mode === 'edit' ? '/home' : '/')} aria-label="Close" className="text-sage transition hover:text-forest"><CloseIcon /></button>
           )}
@@ -106,7 +105,7 @@ export default function OnboardingPage() {
             <section>
               <p className="mb-2 text-[9px] font-medium uppercase tracking-[0.12em] text-placeholder">Step 1 of 3</p>
               <h2 className="font-display text-[22px] font-semibold leading-tight text-forest">What do you take home?</h2>
-              <p className="mb-7 mt-1.5 text-[12px] font-light leading-relaxed text-sage">Your monthly in-hand salary, after all deductions.</p>
+              <p className="mb-7 mt-1.5 text-[12px] font-light leading-relaxed text-sage">Whatever lands in your bank account each month — after taxes are already taken out.</p>
               <label className="mb-1.5 block text-[11px] font-medium tracking-wide text-sage">Monthly take-home income</label>
               <div className="relative"><Currency /><input value={income} onChange={e => setIncome(e.target.value)} type="number" inputMode="numeric" placeholder="55,000" className={fieldCls} /></div>
             </section>
@@ -115,11 +114,11 @@ export default function OnboardingPage() {
           {step === 1 && (
             <section>
               <p className="mb-2 text-[9px] font-medium uppercase tracking-[0.12em] text-placeholder">Step 2 of 3</p>
-              <h2 className="font-display text-[22px] font-semibold leading-tight text-forest">Fixed commitments</h2>
-              <p className="mb-6 mt-1.5 text-[12px] font-light leading-relaxed text-sage">Rent, EMIs, SIPs — money that leaves before you see it.</p>
+              <h2 className="font-display text-[22px] font-semibold leading-tight text-forest">What goes out each month?</h2>
+              <p className="mb-6 mt-1.5 text-[12px] font-light leading-relaxed text-sage">Money that&apos;s gone the moment your salary lands — rent, loan payments, subscriptions, that kind of thing.</p>
               {expenses.map((exp, i) => (
                 <div key={i} className="mb-3 flex gap-2.5">
-                  <select value={exp.label} onChange={e => updateExpense(i, { label: e.target.value })} className="w-[118px] shrink-0 rounded-xl border-[1.5px] border-border bg-white px-3 py-3 text-[13px] text-forest outline-none focus:border-forest">
+                  <select value={exp.label} onChange={e => updateExpense(i, { label: e.target.value })} className="w-[124px] shrink-0 rounded-xl border-[1.5px] border-border bg-white px-3 py-3 text-[13px] text-forest outline-none focus:border-forest">
                     {CATEGORIES.map(c => <option key={c}>{c}</option>)}
                   </select>
                   <div className="relative flex-1"><Currency /><input value={exp.amount} onChange={e => updateExpense(i, { amount: e.target.value })} type="number" inputMode="numeric" placeholder="Amount" className="w-full rounded-xl border-[1.5px] border-border bg-white py-3 pl-8 pr-3 text-[15px] text-forest outline-none focus:border-forest placeholder:text-placeholder" /></div>
@@ -127,19 +126,23 @@ export default function OnboardingPage() {
                 </div>
               ))}
               <button onClick={addExpense} className="flex w-full items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-dashed border-border py-3 text-[13px] text-sage transition hover:border-sage">+ Add commitment</button>
-              <label className="mb-1.5 mt-6 block text-[11px] font-medium tracking-wide text-sage">Monthly savings / investments</label>
-              <div className="relative"><Currency /><input value={savings} onChange={e => setSavings(e.target.value)} type="number" inputMode="numeric" placeholder="10,000" className={fieldCls} /></div>
             </section>
           )}
 
           {step === 2 && (
             <section>
               <p className="mb-2 text-[9px] font-medium uppercase tracking-[0.12em] text-placeholder">Step 3 of 3</p>
-              <h2 className="font-display text-[22px] font-semibold leading-tight text-forest">Your safety cushion</h2>
-              <p className="mb-7 mt-1.5 text-[12px] font-light leading-relaxed text-sage">How much do you have in easily accessible savings right now?</p>
-              <label className="mb-1.5 block text-[11px] font-medium tracking-wide text-sage">Current liquid savings</label>
+              <h2 className="font-display text-[22px] font-semibold leading-tight text-forest">What do you put aside?</h2>
+              <p className="mb-7 mt-1.5 text-[12px] font-light leading-relaxed text-sage">Money you save or invest each month — plus anything you&apos;ve already saved up for a rainy day.</p>
+
+              <label className="mb-1.5 block text-[11px] font-medium tracking-wide text-sage">How much do you save or invest each month?</label>
+              <div className="relative"><Currency /><input value={savings} onChange={e => setSavings(e.target.value)} type="number" inputMode="numeric" placeholder="10,000" className={fieldCls} /></div>
+              <p className="mt-1.5 text-[10px] font-light leading-relaxed text-sage">A rough number is fine. Type 0 if you don&apos;t save regularly.</p>
+
+              <label className="mb-1.5 mt-6 block text-[11px] font-medium tracking-wide text-sage">How much have you saved for emergencies? (optional)</label>
               <div className="relative"><Currency /><input value={buffer} onChange={e => setBuffer(e.target.value)} type="number" inputMode="numeric" placeholder="75,000" className={fieldCls} /></div>
-              <p className="mt-4 rounded-xl bg-[#F0F7F2] p-3.5 text-[11px] font-light leading-relaxed text-sage">We protect 3 months of your essential expenses as an emergency buffer. Purchases won&apos;t get a green light if they&apos;d eat into it.</p>
+              <p className="mt-1.5 text-[10px] font-light leading-relaxed text-sage">This is money you could access easily, not locked-in deposits. We like to keep at least 3 months of your expenses untouched for emergencies, and flag any purchase that would dip into it. If you leave it blank, we&apos;ll treat your emergency fund as ₹0.</p>
+
             </section>
           )}
 
